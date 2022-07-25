@@ -25,22 +25,25 @@ public class Server {
             Scanner in = new Scanner(socket.getInputStream());
             PrintWriter out = new PrintWriter(socket.getOutputStream());
 
-            out.println("Hello, you're the host.\nhow many players does game have: ");
+            out.println("Hello, you're the host.\nhow many players does game have? ");
             out.flush();
             int numberOfPlayers = Integer.parseInt(in.nextLine());
-            out.println("and how many real player: ");
-            out.flush();
-            int numberOfHumans = Integer.parseInt(in.nextLine());
 
-            for (int i = 0; i < numberOfHumans - 1; i++) {
+            for (int i = 0; i < numberOfPlayers - 1; i++) {
                 Socket tempSocket = serverSocket.accept();
                 System.out.println("A player joined.");
-                //adding players to a list
+
+                //adding player to a list
+
+                out.println("there are " + (i + 2) + " players in the server including you, do want to start the game? ");
+                out.flush();
+                String response = in.nextLine();
+                if (response.equals("yes")) {
+                    break;
+                }
             }
 
-            for (int i = 0; i < numberOfPlayers - numberOfHumans; i++) {
-                //adding bots to a list
-            }
+            //adding bots to a list
 
             System.out.println("game is starting...");
             //Starting a game...
