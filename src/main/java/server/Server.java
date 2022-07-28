@@ -56,8 +56,10 @@ public class Server {
                 }
                 for (ClientHandler c : currentGame.clientHandlers) {
                     c.setGame(currentGame);
+                    c.start();
                 }
                 currentGame.start();
+
             }
             //******
 

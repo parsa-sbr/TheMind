@@ -24,7 +24,7 @@ public class Bot extends Thread{
     public void play() throws InterruptedException {
 
         //*** doesn't work, just testing...
-
+        int time = (1/(getCards().get(0) - game.getCardOnTable())) * 20000;
         Thread.sleep(5000);
         Integer card = getCards().get(0);
         game.setCardOnTable(card);
@@ -34,6 +34,7 @@ public class Bot extends Thread{
     @Override
     public void run() {
         while (true) {
+
             try {
                 play();
             } catch (InterruptedException e) {
