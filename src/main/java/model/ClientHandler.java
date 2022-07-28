@@ -34,10 +34,11 @@ public class ClientHandler extends Thread{
         while (true) {
             String input = in.nextLine();
             try {
-                int playedCard = Integer.parseInt(input);
+                Integer playedCard = Integer.parseInt(input);
                 if (cards.contains(playedCard)) {
                     //send card to game
                     game.playCard(username, playedCard);
+                    cards.remove(playedCard);
                 }
                 else {
                     out.println("you don't have this card!");
