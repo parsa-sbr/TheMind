@@ -114,6 +114,11 @@ public class Game extends Thread{
                 c.getCards().remove(card);
             }
         }
+        for (Bot b : bots) {
+            if (b.getUsername().equals(username)) {
+                b.getCards().remove(card);
+            }
+        }
         String played = String.valueOf(card);
         if (card == -2) {
             played = "ninja";
@@ -278,11 +283,13 @@ public class Game extends Thread{
                              }
                          }
                      }
-               }
-                 for (Bot b : bots) {
-                     b.getPlay().set(true);
+                     for (Bot b : bots) {
+                         b.getPlay().set(true);
+                         b.interrupt();
+                     }
                  }
-            }
+               }
+
         }
     }
 }

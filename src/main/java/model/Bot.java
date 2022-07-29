@@ -25,6 +25,10 @@ public class Bot extends Thread{
         return play;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
     public void setGame(Game game) {
         this.game = game;
     }
@@ -67,6 +71,7 @@ public class Bot extends Thread{
             if (play.get() && getCards().size() != 0) {
                 try {
                     long waitingTime = (cards.get(0) - game.getCardOnTable()) * 300L;
+                    System.out.println(waitingTime/1000 + "s");
                     Thread.sleep(waitingTime);
                     game.playCard(username, cards.get(0));
 
