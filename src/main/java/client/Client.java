@@ -5,6 +5,15 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
+
+
+//testing
+
+
+
+
+
+
 public class Client {
 
     Socket socket;
