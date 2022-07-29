@@ -16,6 +16,7 @@ public class Game extends Thread{
     int ninjas;
     Vector<Integer> deckOfAll;
     Vector<Integer> allPlayingCards;
+    AtomicBoolean gameIsAlive = new AtomicBoolean(true);
 
     public Game(Vector<ClientHandler> clientHandlers, Vector<Bot> bots) {
         this.clientHandlers = clientHandlers;
@@ -25,8 +26,8 @@ public class Game extends Thread{
             deckOfAll.add(i);
         }
         ninjas = 2;
-       // hearts = clientHandlers.size() + bots.size();
-        hearts = 1000;
+        hearts = clientHandlers.size() + bots.size();
+       // hearts = 1000;
     }
 
     public Vector<Integer> getAllPlayingCards() {
@@ -169,7 +170,7 @@ public class Game extends Thread{
 
              Integer last = getCardOnTable();
 
-             while (!roundIsFinished.get()) {
+             while (!roundIsFinished.get() && gameIsAlive.get()) {
                  if (last != getCardOnTable()) {
 
                      //*****
@@ -263,10 +264,11 @@ public class Game extends Thread{
 
                              if (hearts == 0) {
                                  for (ClientHandler c : clientHandlers) {
-                                     c.sendMessage("You failed this round!");
+                                     c.sendMessage("You lost!");
                                      roundIsFinished.set(true);
-                                     break;
                                  }
+                                 roundIsFinished.set(true);
+                                 gameIsAlive.set(false);
                              }
                              else {
                                  for (ClientHandler c : clientHandlers) {
