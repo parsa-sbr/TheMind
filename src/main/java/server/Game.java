@@ -34,4 +34,11 @@ public class Game extends Thread{
         sendToAll(username, "played card " + played);
     }
 
+    public int getCardOnTable() {
+        return cardOnTable;
+    }
+
+    public void setCardOnTable(int cardOnTable) {
+        this.cardOnTable = cardOnTable;
+    }
 }
