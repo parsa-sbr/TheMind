@@ -150,6 +150,9 @@ public class Game extends Thread{
 
         for (int i = 1; i < 13; i++) {
              startRound(i);
+            for (Bot b : bots) {
+                b.getPlay().set(true);
+            }
 
             AtomicBoolean roundIsFinished = new AtomicBoolean(false);
 
@@ -157,6 +160,12 @@ public class Game extends Thread{
 
              while (!roundIsFinished.get()) {
                  if (last != getCardOnTable()) {
+
+                     //*****
+                     for (Bot b : bots) {
+                         b.getPlay().set(false);
+                     }
+                     //*****
 
                      if (getCardOnTable() == -2) {
                          setCardOnTable(allPlayingCards.get(clientHandlers.size() + bots.size() - 1));
@@ -270,6 +279,9 @@ public class Game extends Thread{
                          }
                      }
                }
+                 for (Bot b : bots) {
+                     b.getPlay().set(true);
+                 }
             }
         }
     }

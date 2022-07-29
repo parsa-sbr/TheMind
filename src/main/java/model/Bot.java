@@ -8,11 +8,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Bot extends Thread{
     Vector<Integer> cards;
     Game game;
-    int num;
-    final AtomicBoolean keepPlaying = new AtomicBoolean(true);
+    String username;
+    AtomicBoolean play = new AtomicBoolean(false);
 
-    public Bot(int num) {
-       this.num = num;
+    public Bot(String username) {
+       this.username = username;
        cards = new Vector<>();
     }
 
@@ -21,8 +21,8 @@ public class Bot extends Thread{
         return cards;
     }
 
-    public AtomicBoolean getKeepPlaying() {
-        return keepPlaying;
+    public AtomicBoolean getPlay() {
+        return play;
     }
 
     public void setGame(Game game) {
@@ -39,7 +39,7 @@ public class Bot extends Thread{
             System.out.println(game.getAllPlayingCards().toString());
 
             for (ClientHandler c : game.clientHandlers) {
-                c.sendMessage("Bot" + this.num + " played " + card);
+                c.sendMessage(username + " played " + card);
             }
         }
     }
@@ -64,12 +64,23 @@ public class Bot extends Thread{
     @Override
     public void run() {
         while (true) {
-            try {
-                if (getCards().size() != 0)
-                play();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (play.get() && getCards().size() != 0) {
+                try {
+                    long waitingTime = (cards.get(0) - game.getCardOnTable()) * 300L;
+                    Thread.sleep(waitingTime);
+                    game.playCard(username, cards.get(0));
+
+                } catch (Exception e) {
+
+                }
             }
+
+//            try {
+//                if (getCards().size() != 0)
+//                play();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 }
