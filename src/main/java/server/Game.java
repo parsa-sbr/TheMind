@@ -148,7 +148,7 @@ public class Game extends Thread{
     @Override
     public void run() {
 
-        for (int i = 1; i < 12; i++) {
+        for (int i = 1; i < 13; i++) {
              startRound(i);
 
             AtomicBoolean roundIsFinished = new AtomicBoolean(false);
@@ -171,7 +171,13 @@ public class Game extends Thread{
                          if (allPlayingCards.size() == 0) {
                              for (ClientHandler c : clientHandlers) {
                                  update(c, i);
-                                 c.sendMessage("You passed this round!");
+
+                                 if (i == 12) {
+                                     c.sendMessage("You won!");
+                                 }
+                                 else {
+                                     c.sendMessage("You passed this round!");
+                                 }
                              }
                              roundIsFinished.set(true);
                          }
@@ -193,10 +199,19 @@ public class Game extends Thread{
                          if (last.equals(getAllPlayingCards().get(0))) {   /* اگه سر جاش بازی کرده */
 
                              if (getAllPlayingCards().size() == 1) {
-                                 for (ClientHandler c : clientHandlers) {
-                                     update(c, i);
-                                     c.sendMessage("You passed this round!");
+                                 if (i == 12) {
+                                     for (ClientHandler c : clientHandlers) {
+                                         update(c, i);
+                                         c.sendMessage("You won!");
+                                     }
                                  }
+                                 else {
+                                     for (ClientHandler c : clientHandlers) {
+                                         update(c, i);
+                                         c.sendMessage("You passed this round!");
+                                     }
+                                 }
+
                                  roundIsFinished.set(true);
                              }
                              else {
@@ -229,12 +244,28 @@ public class Game extends Thread{
                                  for (ClientHandler c : clientHandlers) {
                                      c.sendMessage("You failed this round!");
                                      roundIsFinished.set(true);
+                                     break;
                                  }
                              }
                              else {
-                                  for (ClientHandler c : clientHandlers) {
-                                      update(c, i);
-                                  }
+                                 for (ClientHandler c : clientHandlers) {
+                                     update(c, i);
+                                 }
+                                 if (allPlayingCards.size() == 0) {
+                                     if (i == 12) {
+                                         for (ClientHandler c : clientHandlers) {
+                                             update(c, i);
+                                             c.sendMessage("You won!");
+                                         }
+                                     }
+                                     else {
+                                         for (ClientHandler c : clientHandlers) {
+                                             update(c, i);
+                                             c.sendMessage("You passed this round!");
+                                         }
+                                     }
+                                     roundIsFinished.set(true);
+                                 }
                              }
                          }
                      }
