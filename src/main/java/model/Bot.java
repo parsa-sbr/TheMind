@@ -68,7 +68,7 @@ public class Bot extends Thread{
 
     @Override
     public void run() {
-        while (true) {
+        while (game.getGameIsAlive().get()) {
             if (play.get() && getCards().size() != 0) {
                 try {
                     long waitingTime = (cards.get(0) - game.getCardOnTable()) * 300L;

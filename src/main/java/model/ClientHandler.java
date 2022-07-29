@@ -52,7 +52,7 @@ public class ClientHandler extends Thread {
 
     @Override
     public void run() {
-        while (true) {
+        while (game.getGameIsAlive().get()) {
             String input = in.nextLine();
             if (input.equals("p")) {
                 game.playCard(username, getCards().get(0));
@@ -73,8 +73,15 @@ public class ClientHandler extends Thread {
                 } catch (Exception e) {
                     if (input.equals("ninja")) {
                         //play the ninja card
-                        game.applyNinja();
-                        game.playCard(username, -2);
+                        if (game.getNinjas() > 0) {
+                          //  game.applyNinja();
+                            game.playCard(username, -2);
+                        }
+                        else {
+                            out.println("you don't have any ninja!");
+                            out.flush();
+                        }
+
                     } else if (input.contains(":)")) {
                         //send :) emoji
                         game.sendToAll(username, ":)");
