@@ -169,6 +169,7 @@ public class Game extends Thread{
                      //*****
                      for (Bot b : bots) {
                          b.getPlay().set(false);
+                         b.interrupt();
                      }
                      //*****
 
@@ -285,7 +286,6 @@ public class Game extends Thread{
                      }
                      for (Bot b : bots) {
                          b.getPlay().set(true);
-                         b.interrupt();
                      }
                  }
                }
