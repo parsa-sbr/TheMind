@@ -8,7 +8,7 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.util.Vector;
 
-public class ClientHandler extends Thread{
+public class ClientHandler extends Thread {
 
     Vector<Integer> cards = new Vector<>();
     Socket socket;
@@ -50,10 +50,6 @@ public class ClientHandler extends Thread{
     }
 
 
-
-
-
-
     @Override
     public void run() {
         while (true) {
@@ -63,16 +59,14 @@ public class ClientHandler extends Thread{
 //                Integer card = getCards().get(0);
 //                game.setCardOnTable(card);
 //                getCards().remove(card);
-            }
-            else {
+            } else {
                 try {
                     Integer playedCard = Integer.parseInt(input);
                     if (cards.contains(playedCard)) {
                         //send card to game
                         game.playCard(username, playedCard);
-                      //  cards.remove(playedCard);
-                    }
-                    else {
+                        //  cards.remove(playedCard);
+                    } else {
                         out.println("you don't have this card!");
                         out.flush();
                     }
@@ -81,20 +75,16 @@ public class ClientHandler extends Thread{
                         //play the ninja card
                         game.applyNinja();
                         game.playCard(username, -2);
-                    }
-                    else if (input.contains(":)")) {
+                    } else if (input.contains(":)")) {
                         //send :) emoji
                         game.sendToAll(username, ":)");
-                    }
-                    else if (input.contains(":(")) {
+                    } else if (input.contains(":(")) {
                         //send :( emoji
                         game.sendToAll(username, ":(");
-                    }
-                    else if (input.contains(":|")) {
+                    } else if (input.contains(":|")) {
                         //send :| emoji
                         game.sendToAll(username, ":|");
-                    }
-                    else if (input.equals("exit")) {
+                    } else if (input.equals("exit")) {
                         //close the socket and add a bot instead of the player
 
                         //game.removePlayer(this);
@@ -103,6 +93,4 @@ public class ClientHandler extends Thread{
             }
         }
     }
-public class ClientHandler extends Thread{
-
 }
