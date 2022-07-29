@@ -50,10 +50,14 @@ public class Bot extends Thread{
             float time = ((float)((getCards().get(0) - last))/3f) * 1000;
             System.out.println(time/1000 + "s");
             Thread.sleep((long) time);
+
+            //******
             if (last != game.getCardOnTable()) {
                 Thread.interrupted();
                 waiting();
             }
+            //******
+
         }
     }
 
