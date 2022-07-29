@@ -1,5 +1,6 @@
 package model;
 
+
 import server.Game;
 
 import java.util.Vector;
@@ -88,4 +89,5 @@ public class Bot extends Thread{
 //            }
         }
     }
+
 }
