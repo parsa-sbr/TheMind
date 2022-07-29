@@ -14,10 +14,11 @@ public class ClientHandler extends Thread{
     Socket socket;
     Scanner in;
     PrintWriter out;
-    String name;
+    String username;
     Game game;
 
-    public ClientHandler(Socket socket) throws IOException {
+    public ClientHandler(Socket socket, String username) throws IOException {
+        this.username = username;
         this.socket = socket;
         in = new Scanner(socket.getInputStream());
         out = new PrintWriter(socket.getOutputStream());
@@ -35,6 +36,14 @@ public class ClientHandler extends Thread{
         return game;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public void sendMessage(String text) {
         out.println(text);
         out.flush();
@@ -48,11 +57,49 @@ public class ClientHandler extends Thread{
     @Override
     public void run() {
         while (true) {
-            String action = in.nextLine();
-            if (action.equals("p")) {
-                Integer card = getCards().get(0);
-                game.setCardOnTable(card);
-                getCards().remove(card);
+            String input = in.nextLine();
+            if (input.equals("p")) {
+                game.playCard(username, getCards().get(0));
+//                Integer card = getCards().get(0);
+//                game.setCardOnTable(card);
+//                getCards().remove(card);
+            }
+            else {
+                try {
+                    Integer playedCard = Integer.parseInt(input);
+                    if (cards.contains(playedCard)) {
+                        //send card to game
+                        game.playCard(username, playedCard);
+                      //  cards.remove(playedCard);
+                    }
+                    else {
+                        out.println("you don't have this card!");
+                        out.flush();
+                    }
+                } catch (Exception e) {
+                    if (input.equals("ninja")) {
+                        //play the ninja card
+                        game.applyNinja();
+                        game.playCard(username, -2);
+                    }
+                    else if (input.contains(":)")) {
+                        //send :) emoji
+                        game.sendToAll(username, ":)");
+                    }
+                    else if (input.contains(":(")) {
+                        //send :( emoji
+                        game.sendToAll(username, ":(");
+                    }
+                    else if (input.contains(":|")) {
+                        //send :| emoji
+                        game.sendToAll(username, ":|");
+                    }
+                    else if (input.equals("exit")) {
+                        //close the socket and add a bot instead of the player
+
+                        //game.removePlayer(this);
+                    }
+                }
             }
         }
     }

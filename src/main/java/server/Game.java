@@ -7,14 +7,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Game extends Thread{
-    Vector<ClientHandler> clientHandlers;
+    public Vector<ClientHandler> clientHandlers;
     Vector<Bot> bots;
-
-    public static AtomicBoolean startBots;
-
     public static int cardOnTable;
     int hearts;
     int ninjas;
@@ -29,15 +25,12 @@ public class Game extends Thread{
             deckOfAll.add(i);
         }
         ninjas = 2;
-        hearts = clientHandlers.size() + bots.size();
+       // hearts = clientHandlers.size() + bots.size();
+        hearts = 1000;
     }
 
     public Vector<Integer> getAllPlayingCards() {
         return allPlayingCards;
-    }
-
-    public void setAllPlayingCards(Vector<Integer> allPlayingCards) {
-        this.allPlayingCards = allPlayingCards;
     }
 
     public int getCardOnTable() {
@@ -48,14 +41,7 @@ public class Game extends Thread{
         Game.cardOnTable = cardOnTable;
     }
 
-    public static AtomicBoolean getStartBots() {
-        return startBots;
-    }
-
     public void startRound(int round) {
-
-        //*** guess this one method works fine completely (doesn't need much debugging) =)
-
         setCardOnTable(0);
         allPlayingCards = new Vector<>();
 
@@ -68,6 +54,15 @@ public class Game extends Thread{
 
         Collections.shuffle(deckOfAll);
         int k = 0;
+
+        for (Bot b : bots) {
+            for (int j = k; j < round + k; j++) {
+                b.getCards().add(deckOfAll.get(j));
+                allPlayingCards.add(deckOfAll.get(j));
+            }
+            k += round;
+            Collections.sort(b.getCards());
+        }
         for (ClientHandler c : clientHandlers) {
             for (int j = k; j < round + k; j++) {
                 c.getCards().add(deckOfAll.get(j));
@@ -77,30 +72,25 @@ public class Game extends Thread{
             Collections.sort(c.getCards());
             update(c, round);
         }
-        for (Bot b : bots) {
-            for (int j = k; j < round + k; j++) {
-                b.getCards().add(deckOfAll.get(j));
-                allPlayingCards.add(deckOfAll.get(j));
-            }
-            k += round;
-            Collections.sort(b.getCards());
-        }
+
 
         Collections.sort(allPlayingCards);
 
-        for (Bot b : bots) {
-            b.start();
 
-            //*** printing to check if bots cards work
-            System.out.println("bot: " + b.getCards().toString());
+        if (round == 1) {
+            for (Bot b : bots) {
+                b.start();
+            }
         }
 
-
-        System.out.println("allPlayingCards: " + allPlayingCards);
+        System.out.println(allPlayingCards.toString());
     }
 
 
     public void update(ClientHandler c, int round) {
+        for (int i = 0; i < bots.size(); i++) {
+            c.sendMessage("Bot " + (i+1) + ": " + bots.get(i).getCards().size());
+        }
         c.sendMessage( "Round: " + round + "\n" +
                            "Hearts: " + hearts + "\n" +
                            "Ninjas: " + ninjas + "\n" +
@@ -109,11 +99,54 @@ public class Game extends Thread{
     }
 
 
+    public void sendToAll(String username, String message) {
+        for (ClientHandler c : clientHandlers) {
+            if (!c.getUsername().equals(username)) {
+                c.sendMessage(username + ": " + message);
+            }
+        }
+    }
+
+    public void playCard(String username, Integer card) {
+        setCardOnTable(card);
+        for (ClientHandler c : clientHandlers) {
+            if (c.getUsername().equals(username)) {
+                c.getCards().remove(card);
+            }
+        }
+        String played = String.valueOf(card);
+        if (card == -2) {
+            played = "ninja";
+            applyNinja();
+            setCardOnTable(-2);
+        }
+        sendToAll(username, " played card " + played);
+        System.out.println(allPlayingCards.toString());
+    }
+
+
+    public void applyNinja() {
+        --ninjas;
+
+        for (ClientHandler c : clientHandlers) {
+            if (c.getCards().size() != 0) {
+                c.getCards().remove(c.getCards().get(0));
+              //  allPlayingCards.remove(c.getCards().get(0));
+            }
+        }
+        for (Bot b : bots) {
+            if (b.getCards().size() != 0) {
+                b.getCards().remove(b.getCards().get(0));
+             //   allPlayingCards.remove(b.getCards().get(0));
+            }
+        }
+    }
+
+
+
+
     @Override
     public void run() {
-
-        //*** needs a lot of debugging :)))
-
 
         for (int i = 1; i < 12; i++) {
              startRound(i);
@@ -124,53 +157,87 @@ public class Game extends Thread{
 
              while (!roundIsFinished.get()) {
                  if (last != getCardOnTable()) {
-                   last = getCardOnTable();
 
-                   if (last.equals(getAllPlayingCards().get(0))) {
+                     if (getCardOnTable() == -2) {
+                         setCardOnTable(allPlayingCards.get(clientHandlers.size() + bots.size() - 1));
+                         last = getCardOnTable();
 
-                       if (getAllPlayingCards().size() == 1) {
-                           for (ClientHandler c : clientHandlers) {
-                               c.sendMessage("You passed this round!");
-                           }
-                           roundIsFinished.set(true);
-                       }
-                       else {
-                           getAllPlayingCards().remove(last);
-                           for (ClientHandler c : clientHandlers) {
-                               update(c, i);
-                           }
-                       }
-                   }
-                   else {
+                         ArrayList<Integer> handle = new ArrayList<>();
+                         for (ClientHandler c : clientHandlers) {
+                             handle.addAll(c.getCards());
+                         }
+                         allPlayingCards.removeIf(n -> !handle.contains(n));
 
-                       hearts--;
-
-                       ArrayList<Integer> remover = new ArrayList<>();
-
-                       for (int x = 0; x < getAllPlayingCards().indexOf(getCardOnTable()); x++) {
-                           for (ClientHandler c : clientHandlers) {
-                               c.getCards().remove(getAllPlayingCards().get(x));
-                           }
-                           for (Bot b : bots) {
-                               b.getCards().remove(getAllPlayingCards().get(x));
-                           }
-                           remover.add(getAllPlayingCards().get(x));
-                       }
-                        for (Integer n : remover) {
-                            getAllPlayingCards().remove(n);
-                        }
-
-                       if (hearts == 0) {
-                           for (ClientHandler c : clientHandlers) {
-                               c.sendMessage("You failed this round!");
-                        }
+                         if (allPlayingCards.size() == 0) {
+                             for (ClientHandler c : clientHandlers) {
+                                 update(c, i);
+                                 c.sendMessage("You passed this round!");
+                             }
+                             roundIsFinished.set(true);
+                         }
+                         else {
+                             for (ClientHandler c : clientHandlers) {
+                                 update(c, i);
+                             }
+                         }
                      }
-                       else {
-                           for (ClientHandler c : clientHandlers) {
-                               c.getGame().update(c, ++i);
-                           }
-                       }
-                  }
+
+
+
+
+                     else {
+                         last = getCardOnTable();
+
+
+
+                         if (last.equals(getAllPlayingCards().get(0))) {   /* اگه سر جاش بازی کرده */
+
+                             if (getAllPlayingCards().size() == 1) {
+                                 for (ClientHandler c : clientHandlers) {
+                                     update(c, i);
+                                     c.sendMessage("You passed this round!");
+                                 }
+                                 roundIsFinished.set(true);
+                             }
+                             else {
+                                 getAllPlayingCards().remove(last);
+                                 for (ClientHandler c : clientHandlers) {
+                                     update(c, i);
+                                 }
+                             }
+                         }
+                         else {
+
+                            --hearts;
+
+                             ArrayList<Integer> remover = new ArrayList<>();
+
+                             for (int x = 0; x < getAllPlayingCards().indexOf(getCardOnTable()) + 1; x++) {
+                                 for (ClientHandler c : clientHandlers) {
+                                     c.getCards().remove(getAllPlayingCards().get(x));
+                                 }
+                                 for (Bot b : bots) {
+                                     b.getCards().remove(getAllPlayingCards().get(x));
+                                 }
+                                 remover.add(getAllPlayingCards().get(x));
+                             }
+                             for (Integer n : remover) {
+                                 getAllPlayingCards().remove(n);
+                             }
+
+                             if (hearts == 0) {
+                                 for (ClientHandler c : clientHandlers) {
+                                     c.sendMessage("You failed this round!");
+                                     roundIsFinished.set(true);
+                                 }
+                             }
+                             else {
+                                  for (ClientHandler c : clientHandlers) {
+                                      update(c, i);
+                                  }
+                             }
+                         }
+                     }
                }
             }
         }
