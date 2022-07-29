@@ -88,9 +88,15 @@ public class Game extends Thread{
 
 
     public void update(ClientHandler c, int round) {
-        for (int i = 0; i < bots.size(); i++) {
-            c.sendMessage("Bot " + (i+1) + ": " + bots.get(i).getCards().size());
-        }
+            for (Bot b : bots) {
+                c.sendMessage(b.getUsername() + ": " + b.getCards().size());
+            }
+            for (ClientHandler other : clientHandlers) {
+                if (!other.getUsername().equals(c.getUsername())) {
+                    c.sendMessage(other.getUsername() + ": " + other.getCards().size());
+                }
+            }
+
         c.sendMessage( "Round: " + round + "\n" +
                            "Hearts: " + hearts + "\n" +
                            "Ninjas: " + ninjas + "\n" +
