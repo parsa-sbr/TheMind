@@ -20,6 +20,10 @@ public class Bot extends Thread{
         return cards;
     }
 
+    public void setCards(Vector<Integer> cards) {
+        this.cards = cards;
+    }
+
     public AtomicBoolean getPlay() {
         return play;
     }
@@ -37,7 +41,7 @@ public class Bot extends Thread{
         while (game.getGameIsAlive().get()) {
             if (play.get() && getCards().size() != 0) {
                 try {
-                    long waitingTime = (cards.get(0) - game.getCardOnTable()) * 300L;
+                    long waitingTime = (cards.get(0) - game.getCardOnTable()) * 350L * ((game.getRound() + 2) / 3);
                     System.out.println(waitingTime/1000 + "s");
                     Thread.sleep(waitingTime);
                     game.playCard(username, cards.get(0));

@@ -10,10 +10,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Game extends Thread{
     public Vector<ClientHandler> clientHandlers;
-    Vector<Bot> bots;
-    public static int cardOnTable;
+    public Vector<Bot> bots;
+    public int cardOnTable;
     int hearts;
     int ninjas;
+    int round;
     Vector<Integer> deckOfAll;
     Vector<Integer> allPlayingCards;
     AtomicBoolean gameIsAlive = new AtomicBoolean(true);
@@ -39,7 +40,7 @@ public class Game extends Thread{
     }
 
     public void setCardOnTable(int cardOnTable) {
-        Game.cardOnTable = cardOnTable;
+        this.cardOnTable = cardOnTable;
     }
 
     public AtomicBoolean getGameIsAlive() {
@@ -48,6 +49,10 @@ public class Game extends Thread{
 
     public int getNinjas() {
         return ninjas;
+    }
+
+    public int getRound() {
+        return round;
     }
 
     public void startRound(int round) {
@@ -77,8 +82,8 @@ public class Game extends Thread{
             }
             k += round;
             Collections.sort(c.getCards());
-            update(c, round);
         }
+        updateAll(round);
         Collections.sort(allPlayingCards);
         if (round == 1) {
             for (Bot b : bots) {
@@ -201,11 +206,23 @@ public class Game extends Thread{
          }
      }
 
+     public void removePlayer(ClientHandler clientHandler) {
+         clientHandler.killConnection();
+         Bot bot = new Bot("Bot " + ((Math.abs(Math.random())*100) + 1));
+         bot.setGame(this);
+         bot.setCards(clientHandler.getCards());
+         sendToAll("Player " + clientHandler.getUsername() + " left the game");
+         clientHandlers.remove(clientHandler);
+         this.bots.add(bot);
+         bot.start();
+     }
+
 
     @Override
     public void run() {
         while (getGameIsAlive().get()) {
             loop: for (int i = 1; i < 13; i++) {
+                round = i;
                 startRound(i);
                 for (Bot b : bots) {
                     b.getPlay().set(true);
@@ -222,8 +239,8 @@ public class Game extends Thread{
                         if (getCardOnTable() == -2) {
                             applyNinja(i);
                             if (allPlayingCards.size() == 0) {
-                                if (i == 12) sendToAll("You won!");
-                                else sendToAll("You passed this round!");
+                                if (i == 12) sendToAll("\nYou won!");
+                                else sendToAll("\nYou passed this round!\n");
                                 roundIsFinished.set(true);
                             }
                         }
@@ -232,8 +249,8 @@ public class Game extends Thread{
                             if (last.equals(getAllPlayingCards().get(0))) {   /* اگه سر جاش بازی کرده */
                                 updateAll(i);
                                 if (getAllPlayingCards().size() == 1) {
-                                    if (i == 12) sendToAll("You won!");
-                                    else sendToAll("You passed this round!");
+                                    if (i == 12) sendToAll("\nYou won!");
+                                    else sendToAll("\nYou passed this round!\n");
                                     roundIsFinished.set(true);
                                 }
                                 else {
@@ -244,7 +261,7 @@ public class Game extends Thread{
                                 applyMinusHeart();
                                 if (hearts == 0) {
                                     updateAll(i);
-                                    sendToAll("You lost!");
+                                    sendToAll("\nYou lost!");
                                     roundIsFinished.set(true);
                                     gameIsAlive.set(false);
                                     break loop;
@@ -256,12 +273,12 @@ public class Game extends Thread{
                                     if (allPlayingCards.size() == 0) {
                                         if (i == 12) {
                                             updateAll(i);
-                                            sendToAll("You won!");
+                                            sendToAll("\nYou won!");
                                             gameIsAlive.set(false);
                                             break loop;
                                         }
                                         else {
-                                            sendToAll("You passed this round!");
+                                            sendToAll("\nYou passed this round!");
                                         }
                                         roundIsFinished.set(true);
                                     }
@@ -275,5 +292,10 @@ public class Game extends Thread{
                 }
             }
         }
+
+        for (ClientHandler c : clientHandlers) {
+            c.killConnection();
+        }
+
     }
 }

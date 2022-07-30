@@ -5,6 +5,8 @@ import server.Game;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.security.SecureRandom;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -16,12 +18,15 @@ public class ClientHandler extends Thread {
     PrintWriter out;
     String username;
     Game game;
+    protected static SecureRandom random = new SecureRandom();
+    String token;
 
     public ClientHandler(Socket socket, String username) throws IOException {
         this.username = username;
         this.socket = socket;
         in = new Scanner(socket.getInputStream());
         out = new PrintWriter(socket.getOutputStream());
+        setToken();
     }
 
     public Vector<Integer> getCards() {
@@ -41,13 +46,22 @@ public class ClientHandler extends Thread {
         out.flush();
     }
 
+    public void setToken() {
+        token = tokenGenerator();
+        sendMessage("TOKEN#" + token);
+    }
+
     @Override
     public void run() {
         while (game.getGameIsAlive().get()) {
-            String input = in.nextLine();
-            if (input.equals("p")) {
-                game.playCard(username, getCards().get(0));
-            } else {
+            String input = "";
+            try {
+                input = in.nextLine();
+            } catch (Exception e) {
+                continue;
+            }
+            if (input.split("#")[1].equals(token)) {
+                input = input.split("#")[0];
                 try {
                     Integer playedCard = Integer.parseInt(input);
                     if (cards.contains(playedCard)) {
@@ -73,11 +87,28 @@ public class ClientHandler extends Thread {
                         game.sendToAll(username, ":|");
                     } else if (input.equals("exit")) {
                         //close the socket and add a bot instead of the player
-
-                        //game.removePlayer(this);
+                        game.removePlayer(this);
                     }
                 }
             }
         }
     }
+
+    private synchronized String tokenGenerator() {
+        long longToken = Math.abs( random.nextLong() );
+        String token = Long.toString( longToken, 16 );
+        return token;
+    }
+
+    public void killConnection() {
+        sendMessage("TERMINATE");
+        try {
+            socket.close();
+            in.close();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
