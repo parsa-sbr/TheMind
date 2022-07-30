@@ -20,27 +20,19 @@ public class Client {
     }
 
     public void init() {
-        Thread read = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    String input = in.nextLine();
-                    System.out.println(input);
-                }
+        Thread read = new Thread(() -> {
+            while (true) {
+                String input = in.nextLine();
+                System.out.println(input);
             }
         });
-
-        Thread write = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    String send = scan.nextLine();
-                    out.println(send);
-                    out.flush();
-                }
+        Thread write = new Thread(() -> {
+            while (true) {
+                String send = scan.nextLine();
+                out.println(send);
+                out.flush();
             }
         });
-
         read.start();
         write.start();
     }

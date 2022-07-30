@@ -32,16 +32,8 @@ public class ClientHandler extends Thread {
         this.game = game;
     }
 
-    public Game getGame() {
-        return game;
-    }
-
     public String getUsername() {
         return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public void sendMessage(String text) {
@@ -49,47 +41,35 @@ public class ClientHandler extends Thread {
         out.flush();
     }
 
-
     @Override
     public void run() {
         while (game.getGameIsAlive().get()) {
             String input = in.nextLine();
             if (input.equals("p")) {
                 game.playCard(username, getCards().get(0));
-//                Integer card = getCards().get(0);
-//                game.setCardOnTable(card);
-//                getCards().remove(card);
             } else {
                 try {
                     Integer playedCard = Integer.parseInt(input);
                     if (cards.contains(playedCard)) {
-                        //send card to game
                         game.playCard(username, playedCard);
-                        //  cards.remove(playedCard);
                     } else {
                         out.println("you don't have this card!");
                         out.flush();
                     }
                 } catch (Exception e) {
                     if (input.equals("ninja")) {
-                        //play the ninja card
                         if (game.getNinjas() > 0) {
-                          //  game.applyNinja();
                             game.playCard(username, -2);
                         }
                         else {
                             out.println("you don't have any ninja!");
                             out.flush();
                         }
-
                     } else if (input.contains(":)")) {
-                        //send :) emoji
                         game.sendToAll(username, ":)");
                     } else if (input.contains(":(")) {
-                        //send :( emoji
                         game.sendToAll(username, ":(");
                     } else if (input.contains(":|")) {
-                        //send :| emoji
                         game.sendToAll(username, ":|");
                     } else if (input.equals("exit")) {
                         //close the socket and add a bot instead of the player
