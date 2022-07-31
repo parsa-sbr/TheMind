@@ -186,6 +186,13 @@ public class Game extends Thread{
         Collections.sort(handle);
         Collections.reverse(handle);
 
+        for (ClientHandler c : clientHandlers) {
+            c.getCards().removeIf(n -> n < handle.get(0));
+        }
+        for (Bot b : bots) {
+            b.getCards().removeIf(n -> n < handle.get(0));
+        }
+
         for (Integer n : handle) {
             allPlayingCards.remove(n);
         }
