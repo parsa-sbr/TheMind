@@ -6,12 +6,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.security.SecureRandom;
-import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.Vector;
 
 public class ClientHandler extends Thread {
-
     Vector<Integer> cards = new Vector<>();
     Socket socket;
     Scanner in;
@@ -31,6 +29,10 @@ public class ClientHandler extends Thread {
 
     public Vector<Integer> getCards() {
         return cards;
+    }
+
+    public void setCards(Vector<Integer> cards) {
+        this.cards = cards;
     }
 
     public void setGame(Game game) {
@@ -54,7 +56,7 @@ public class ClientHandler extends Thread {
     @Override
     public void run() {
         while (game.getGameIsAlive().get()) {
-            String input = "";
+            String input;
             try {
                 input = in.nextLine();
             } catch (Exception e) {
@@ -96,8 +98,7 @@ public class ClientHandler extends Thread {
 
     private synchronized String tokenGenerator() {
         long longToken = Math.abs( random.nextLong() );
-        String token = Long.toString( longToken, 16 );
-        return token;
+        return Long.toString( longToken, 16 );
     }
 
     public void killConnection() {
@@ -110,5 +111,4 @@ public class ClientHandler extends Thread {
             e.printStackTrace();
         }
     }
-
 }
