@@ -271,12 +271,12 @@ public class Game extends Thread{
                 Integer last = getCardOnTable();
 
                 while (!roundIsFinished.get()) {
+                    AtomicBoolean checkIsFull = new AtomicBoolean(true);
                     for (Game g : server.games) {
-                        server.isFull.set(server.isFull.get() && g.isFull.get());
-                        if (!g.isFull.get() && !server.games.contains(g)) {
-                            server.games.add(g);
-                        }
+                        checkIsFull.set(checkIsFull.get() && g.isFull.get());
+
                     }
+                    server.isFull.set(checkIsFull.get());
 
                     isFull.set(bots.size() == 0);
                     if (countAfterNinjaPlayed == 2) {
@@ -347,6 +347,22 @@ public class Game extends Thread{
                 }
             }
         }
+
+        AtomicBoolean checkIsFull = new AtomicBoolean(true);
+
+
+        server.games.removeIf(g -> g.isFull.get());
+
+        for (Game g : server.games) {
+            checkIsFull.set(checkIsFull.get() && g.isFull.get());
+        }
+
+        server.isFull.set(checkIsFull.get());
+        server.games.removeIf(g -> !g.gameIsAlive.get());
+
+
+        System.out.println(checkIsFull.get());
+        System.out.println(server.games.size() + " **** " + server.isFull.get());
         for (ClientHandler c : clientHandlers) {
             c.killConnection();
         }

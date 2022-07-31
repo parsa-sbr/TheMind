@@ -27,6 +27,10 @@ public class ClientHandler extends Thread {
         setToken();
     }
 
+    public Socket getSocket() {
+        return socket;
+    }
+
     public Vector<Integer> getCards() {
         return cards;
     }
@@ -88,7 +92,6 @@ public class ClientHandler extends Thread {
                     } else if (input.contains(":|")) {
                         game.sendToAll(username, ":|");
                     } else if (input.equals("exit")) {
-                        //close the socket and add a bot instead of the player
                         game.removePlayer(this);
                     }
                 }
