@@ -3,10 +3,13 @@ package server;
 import model.Bot;
 import model.ClientHandler;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -14,13 +17,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Server {
 
     ServerSocket serverSocket;
+    private int port;
     Vector<Game> games = new Vector<>();
     int numOfBots = 1;
     int count = 1;
     AtomicBoolean isFull = new AtomicBoolean(true);
 
     public Server() throws IOException {
-        serverSocket = new ServerSocket(1234);
+        setConnection();
+        serverSocket = new ServerSocket(port);
     }
 
     public void startGame(Vector<ClientHandler> clients, int numberOfPlayers) {
@@ -45,6 +50,24 @@ public class Server {
             currentGame.isFull.set(true);
             games.remove(currentGame);
         }
+    }
+
+    private void setConnection() {
+        Properties prop=new Properties();
+        FileInputStream ip= null;
+        try {
+            ip = new FileInputStream("src/main/resources/config.properties");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            prop.load(ip);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        port = Integer.parseInt(prop.getProperty("port"));
     }
 
     public void init() throws IOException {

@@ -1,12 +1,17 @@
 package client;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Properties;
 import java.util.Scanner;
 
 public class Client {
 
+    private String host;
+    private int port;
     Socket socket;
     Scanner scan;
     Scanner in;
@@ -15,7 +20,8 @@ public class Client {
     boolean running = true;
 
     public Client() throws IOException {
-        socket = new Socket("localhost", 1234);
+        setConnection();
+        socket = new Socket(host, port);
         scan = new Scanner(System.in);
         in = new Scanner(socket.getInputStream());
         out = new PrintWriter(socket.getOutputStream());
@@ -60,5 +66,24 @@ public class Client {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    private void setConnection() {
+        Properties prop=new Properties();
+        FileInputStream ip= null;
+        try {
+            ip = new FileInputStream("src/main/resources/config.properties");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            prop.load(ip);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        host = prop.getProperty("host");
+        port = Integer.parseInt(prop.getProperty("port"));
     }
 }
