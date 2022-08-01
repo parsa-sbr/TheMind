@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Game extends Thread{
     public Vector<ClientHandler> clientHandlers;
     public Vector<Bot> bots;
-    public static int cardOnTable;
+    public int cardOnTable;
     int hearts;
     int ninjas;
     int round;
@@ -226,6 +226,7 @@ public class Game extends Thread{
          }
      }
 
+
      public void removePlayer(ClientHandler clientHandler) {
          isFull.set(false);
          clientHandler.killConnection();
@@ -240,7 +241,7 @@ public class Game extends Thread{
          if (!server.games.contains(this)) {
              server.games.add(this);
          }
-         server.isFull.set(false);
+
      }
 
 
@@ -254,6 +255,7 @@ public class Game extends Thread{
          x.getStopped().set(true);
          sendToAll(clientHandler.getUsername(), "Player " + clientHandler.getUsername() + " joined the game");
          clientHandler.start();
+         isFull.set(bots.size() == 0);
      }
 
 
@@ -261,7 +263,6 @@ public class Game extends Thread{
     public void run() {
         while (gameIsAlive.get()) {
             loop: for (int i = 1; i < 13; i++) {
-
                 round = i;
                 startRound(i);
                 for (Bot b : bots) {
@@ -271,13 +272,6 @@ public class Game extends Thread{
                 Integer last = getCardOnTable();
 
                 while (!roundIsFinished.get()) {
-                    AtomicBoolean checkIsFull = new AtomicBoolean(true);
-                    for (Game g : server.games) {
-                        checkIsFull.set(checkIsFull.get() && g.isFull.get());
-
-                    }
-                    server.isFull.set(checkIsFull.get());
-
                     isFull.set(bots.size() == 0);
                     if (countAfterNinjaPlayed == 2) {
                         ninjaWasPlayed.set(false);
@@ -347,22 +341,6 @@ public class Game extends Thread{
                 }
             }
         }
-
-        AtomicBoolean checkIsFull = new AtomicBoolean(true);
-
-
-        server.games.removeIf(g -> g.isFull.get());
-
-        for (Game g : server.games) {
-            checkIsFull.set(checkIsFull.get() && g.isFull.get());
-        }
-
-        server.isFull.set(checkIsFull.get());
-        server.games.removeIf(g -> !g.gameIsAlive.get());
-
-
-        System.out.println(checkIsFull.get());
-        System.out.println(server.games.size() + " **** " + server.isFull.get());
         for (ClientHandler c : clientHandlers) {
             c.killConnection();
         }

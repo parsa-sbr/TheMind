@@ -5,7 +5,9 @@ import java.io.IOException;
 public class ServerMain {
     public static void main(String[] args) {
         try {
-            new Server().init();
+            Server server = new Server();
+            server.start();
+            server.init();
         } catch (IOException e) {
             e.printStackTrace();
         }

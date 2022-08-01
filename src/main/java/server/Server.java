@@ -14,13 +14,14 @@ import java.util.Scanner;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Server {
+public class Server extends Thread{
     ServerSocket serverSocket;
     private int port;
     Vector<Game> games = new Vector<>();
     int numOfBots = 1;
     int count = 1;
     AtomicBoolean isFull = new AtomicBoolean(true);
+    AtomicBoolean serverIsRunning = new AtomicBoolean(false);
 
     public Server() throws IOException {
         setConnection();
@@ -43,6 +44,7 @@ public class Server {
         }
         currentGame.start();
         games.add(currentGame);
+        isFull.set(false);
         if (list.size() == 0) {
             currentGame.isFull.set(true);
             games.remove(currentGame);
@@ -98,7 +100,7 @@ public class Server {
                 System.out.println("A player joined.");
                 clients.add(new ClientHandler(tempSocket, "User" + (i + 1)));
                 c++;
-                sendMessage(out, "There are " + (i + 1) + " players in the server including you." +
+                sendMessage(out, "There are " + (c + 1) + " players in the server including you." +
                                                                   " Do you want to start the game?");
                 String response2 = in.nextLine().split("#")[0];
                 if (response2.equals("yes")) break;
@@ -146,6 +148,7 @@ public class Server {
 
 
     public void init() throws IOException {
+        serverIsRunning.set(true);
         System.out.println("server started.");
         while (true) {
             games.removeIf(g -> !g.gameIsAlive.get());
@@ -158,28 +161,35 @@ public class Server {
                     clients.add(newClient);
                     Scanner in = new Scanner(socket.getInputStream());
                     PrintWriter out = new PrintWriter(socket.getOutputStream());
-                    askIfThePlayerWantsToJoinAGame(in, out, clients, newClient);
+                    if (!isFull.get()) {
+                        askIfThePlayerWantsToJoinAGame(in, out, clients, newClient);
+                    }
+                    else setUpNewGame(in, out, clients);
                 }
                 else {
                     Vector<ClientHandler> clients = new Vector<>();
                     ClientHandler newClient = waitForHostToJoin(clients);
                     Scanner in = new Scanner(newClient.getSocket().getInputStream());
                     PrintWriter out = new PrintWriter(newClient.getSocket().getOutputStream());
-
-
-                    if (games.size() == 0) {
-                        if (!isFull.get()) {
-                            askIfThePlayerWantsToJoinAGame(in, out, clients, newClient);
-                        }
-                        else setUpNewGame(in, out, clients);
-                    }
-                    else if (!isFull.get()) {
+                    if (!isFull.get()) {
                         askIfThePlayerWantsToJoinAGame(in, out, clients, newClient);
                     }
                     else setUpNewGame(in, out, clients);
-                    setUpNewGame(in, out, clients);
                 }
             }
+        }
+    }
+
+    @Override
+    public void run() {
+        AtomicBoolean checkIsFull = new AtomicBoolean(true);
+        while (serverIsRunning.get()) {
+            checkIsFull.set(true);
+            games.removeIf(g -> g.isFull.get() || !g.gameIsAlive.get());
+            for (Game g : games) {
+                checkIsFull.set(checkIsFull.get() && g.isFull.get());
+            }
+            isFull.set(checkIsFull.get());
         }
     }
 }
